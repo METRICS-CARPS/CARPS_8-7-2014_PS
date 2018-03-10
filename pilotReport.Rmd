@@ -1,0 +1,193 @@
+---
+title: "CARPS Reproducibility Report"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+#### Article ID: CARPS_8-7-2014_PS
+#### Pilot 1: Mufan Luo
+#### Co-pilot: Sean Raymond Zion
+#### Start date: 2017-11-01
+#### End date: 2017-11-06   
+
+-------
+
+#### Methods summary: 
+This is a within-subject experiment where 24 kindergarten children learned in two classroom environments (decorated classroom vs. sparse classroom) and accepted learning test in both pretest and posttest. 
+
+------
+
+#### Target outcomes: 
+First, pretest accuracy was statistically equivalent in the sparse and decorated classroom conditions. Second, children's posttest scores were significantly higher than their pretest scores in both classroom conditions. Third, children's learning scores at *posttest* were higher in the sparse classroom than in the decorated classroom. Last, the gain scores were higher in the sparse than in the decorated-classroom condition.
+
+------
+
+[The chunk below sets up some formatting options for the R Markdown document]
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+## Step 1: Load packages
+
+[Some useful packages are being loaded below. You can add any additional ones you might need too.]
+
+```{r}
+rm(list = ls())
+library(dplyr)# for data munging
+library(tidyverse)
+library(knitr) # for kable table formating
+library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
+library(readxl) # import excel files
+library(CARPSreports) # custom report functions
+library(ggplot2)
+library(lsr)
+library(Rmisc)# calculate summarySE
+```
+
+## Step 2: Load data
+
+```{r}
+d <- read.csv("/Users/mufanluo/Documents/GitHub/CARPS_8-7-2014_PS/data/VisualEnv-Attn-Learning-Data.csv")
+d <- d[-c(15, 25:27), ]
+d <- dplyr::select(d, c(1:18))
+```
+
+## Step 3: Tidy data
+
+```{r}
+d <- d %>%
+  dplyr::rename(pretest_sparse = Pre.Test.Sparse.Classroom, pretest_decorated = Pre.Test.Decorated.Classroom, posttest_decorated = Post.Test.Decorated.Classroom, posttest_sparse = Post.Test.Sparse.Classroom, total_posttest = Total.Post.Test)
+
+d <- d [,c(1:7)]
+d.tidy <- d %>%
+  gather(type, value, 3:6) %>%
+  separate(type,c("type", "classroom"), sep="_") %>%
+  spread(type, value)
+```
+
+## Step 4: Run analysis
+
+### Pre-processing data
+
+```{r}
+d.tidy$classroom = as.factor(d.tidy$classroom)
+d.tidy$pretest = as.numeric(d.tidy$pretest)
+d.tidy$posttest = as.numeric(d.tidy$posttest)
+```
+
+### Descriptive statistics
+Results for pretest accuracy for two environment conditions. 
+```{r}
+d.tidy %>%
+  dplyr::group_by(classroom) %>%
+  dplyr::summarise(mean = mean(pretest), 
+            sd = sd(pretest))
+```
+
+Results for posttest accuracy for two environment conditions. 
+```{r}
+d.tidy %>%
+  dplyr::group_by(classroom)%>%
+  dplyr::summarise(mean = mean(posttest), 
+            sd = sd(posttest))
+```
+
+Results for gain scores for two environment conditions. 
+```{r}
+d.tidy <- d.tidy%>%
+  mutate(gain = posttest - pretest)
+d.tidy%>%
+  dplyr::group_by(classroom)%>%
+  dplyr::summarise(gain_avg = mean(gain), 
+            gain_sd = sd(gain))
+```
+
+
+### Inferential statistics
+
+First, pretest accuracy was statistically equivalent in the sparse (M = 23% rather than 22% as reported) and decorated classroom (23%), paired-samples t(22) <1. Accuracy was not different from chance (25% in the study), t(22) = 0.73, p = .47 for the sparse condition, and t(22) = 1.25, p = .22 for the decorated condition. 
+```{r}
+with(d.tidy, {
+  t.test(pretest ~ classroom, paired = TRUE, alternative = "two.sided")
+})
+```
+
+```{r}
+decorated <- d.tidy%>%
+  filter(classroom =="decorated")
+sparse <- d.tidy%>%
+  filter(classroom == "sparse")
+t.test(decorated$pretest, mu = 0.25)
+t.test(sparse$pretest, mu = 0.25)
+```
+
+Second, children’s posttest accuracy was higher than their pretest scores in both the sparse condition, t(22) = 7.42, p < .001, and the decorated condition, t(22) = 4.70 (smaller than 4.72 as reported), p <.001. Children’s posttest accuracy (or learning scores) were higher in the sparse condition (M = 55%) than the decorated condition (42%), t(22) = 2.95, p = .007, cohen’s d = .63 (rather than .65 as reported). 
+```{r}
+t.test(decorated$posttest, decorated$pretest, paired = TRUE, alternative = "two.sided")
+t.test(sparse$posttest, sparse$pretest, paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+with(d.tidy, {
+  t.test(posttest ~ classroom, paired = TRUE, alternative = "two.sided")
+})
+cohensD(decorated$posttest, sparse$posttest)
+```
+
+Finally, children’s learning scores were higher in the sparse (M = 32% rather than 33%, SD = 19 rather than 22) than in the decorated condition (M = 19% rather than 18% as reported, SD = 19), t(22) = 3.17 (rather than 3.49 as reported), p = .004 (rather than .002 as reported), cohen’s d = .65 (rather than .73 as reported). 
+```{r}
+with(d.tidy, {
+  t.test(gain ~ classroom, paired = TRUE, alternative = "two.sided")
+})
+cohensD(sparse$gain, decorated$gain)
+```
+
+### Replicate Figure 4 in the paper
+```{r}
+d.tidy2 <- d.tidy %>%
+  gather(type, accuracy, 6:7)
+d.tidy2$accuracy = d.tidy2$accuracy*100
+d.tidy2$classroom = factor(d.tidy2$classroom, labels = c("Decorated-Classroom Condition", "Sparse-Classroom Condition"))
+
+summ <- summarySE(d.tidy2, measurevar="accuracy", groupvars=c("classroom", "type"))
+ggplot(summ, aes(x = classroom, y = accuracy,  fill = type)) + 
+  geom_bar(stat = "summary",fun.y = "mean", fun.ymin = "min", fun.ymax = "max", position = "dodge", aes(fill = type)) +
+  labs(y = "Percentage Correct (%)") + 
+  geom_errorbar(aes(ymin=accuracy-se, ymax=accuracy+se),
+                  width=.2,
+                  position=position_dodge(.9))
+```
+
+### Recording errors 
+
+```{r}
+compareValues(reportedValue = 0.22, obtainedValue = 0.23)
+compareValues(reportedValue = 0.65, obtainedValue = 0.63)
+compareValues(reportedValue = 0.65, obtainedValue = 0.73)
+compareValues(reportedValue = 0.32, obtainedValue = 0.33)
+compareValues(reportedValue = 22, obtainedValue = 19)
+compareValues(reportedValue = 18, obtainedValue = 19)
+compareValues(reportedValue = 3.17, obtainedValue = 3.49)
+compareValues(reportedValue = 0.002, obtainedValue = 0.004, isP = T)
+```
+
+## Step 5: Conclusion
+
+```{r}
+carpsReport(Report_Type = "pilot", 
+             Article_ID = "CARPS_8-7-2014_PS", 
+             Insufficient_Information_Errors = 1, 
+             Decision_Errors = 5, 
+             Major_Numerical_Errors = 3, 
+             Time_to_Complete = 240, 
+             Author_Assistance = FALSE)
+```
+
+In conclusion, this replication analysis identified several discrepancies with the reported outcomes in the original paper, including 5 minor numerical errors, 3 major numerical errors, and an error that is not completely clear according to the original paper. Therefore, the final outcome is failure. 
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
