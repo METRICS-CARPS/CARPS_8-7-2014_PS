@@ -6,11 +6,17 @@ output:
     toc_float: true
 ---
 
-#### Article ID: CARPS_8-7-2014_PS
-#### Pilot 1: Mufan Luo
-#### Co-pilot: Sean Raymond Zion
-#### Start date: 2017-11-01
-#### End date: 2017-11-06   
+```{r}
+articleID <- "8-7-2014_PS" # insert the article ID code here e.g., "10-3-2015_PS"
+reportType <- 'pilot'
+pilotNames <- "Mufan Luo, Sean Raymond Zion" # insert the pilot's name here e.g., "Tom Hardwicke". If there are multiple pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
+copilotNames <- "Tom Hardwicke" # insert the co-pilot's name here e.g., "Michael Frank". If there are multiple co-pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
+pilotTTC <- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+copilotTTC <- NA # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+pilotStartDate <- as.Date("01/11/17", format = "%m/%d/%y") # insert the pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+copilotStartDate <- as.Date("", format = "%m/%d/%y") # insert the co-pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+completionDate <- as.Date("", format = "%m/%d/%y") # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+```
 
 -------
 
@@ -20,7 +26,30 @@ This is a within-subject experiment where 24 kindergarten children learned in tw
 ------
 
 #### Target outcomes: 
-First, pretest accuracy was statistically equivalent in the sparse and decorated classroom conditions. Second, children's posttest scores were significantly higher than their pretest scores in both classroom conditions. Third, children's learning scores at *posttest* were higher in the sparse classroom than in the decorated classroom. Last, the gain scores were higher in the sparse than in the decorated-classroom condition.
+> > Effect of classroom type on learning
+
+> Pretest accuracy was statistically equivalent in the sparse classroom
+condition (M = 22%) and the decorated-classroom
+condition (M = 23%), paired-samples t(22) < 1, and
+accuracy in both conditions was not different from
+chance, both one-sample ts (22) < 1.3, ps > .21. The children’s
+posttest scores were significantly higher than their
+pretest scores in both experimental conditions, both
+paired-samples ts(22) > 4.72, ps ≤ .0001 (Fig. 4). Therefore,
+in both experimental conditions, the children successfully
+learned from the instruction. However, their learning
+scores were higher in the sparse-classroom condition
+(M = 55%) than in the decorated-classroom condition
+(M = 42%), paired-samples t(22) = 2.95, p = .007; this
+effect was of medium size, Cohen’s d = 0.65.
+Analysis of gain scores corroborated the results of the
+analysis of the posttest scores. Gain scores were calculated
+by subtracting each participant’s pretest score from
+his or her posttest score. Pairwise comparisons indicated
+that the children’s learning gains were higher in the
+sparse-classroom condition (M = 33%, SD = 22) than in
+the decorated-classroom condition (M = 18%, SD = 19),
+paired-sample t(22) = 3.49, p = .002, Cohen’s d = 0.73.
 
 ------
 
@@ -35,7 +64,6 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 [Some useful packages are being loaded below. You can add any additional ones you might need too.]
 
 ```{r}
-rm(list = ls())
 library(dplyr)# for data munging
 library(tidyverse)
 library(knitr) # for kable table formating
@@ -47,10 +75,15 @@ library(lsr)
 library(Rmisc)# calculate summarySE
 ```
 
+```{r}
+# Prepare report object. This will be updated automatically by the reproCheck function each time values are compared.
+reportObject <- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = NA, valueType = NA, percentageError = NA, comparisonOutcome = NA, eyeballCheck = NA)
+```
+
 ## Step 2: Load data
 
 ```{r}
-d <- read.csv("/Users/mufanluo/Documents/GitHub/CARPS_8-7-2014_PS/data/VisualEnv-Attn-Learning-Data.csv")
+d <- read.csv("data/VisualEnv-Attn-Learning-Data.csv")
 d <- d[-c(15, 25:27), ]
 d <- dplyr::select(d, c(1:18))
 ```
@@ -109,6 +142,7 @@ d.tidy%>%
 ### Inferential statistics
 
 First, pretest accuracy was statistically equivalent in the sparse (M = 23% rather than 22% as reported) and decorated classroom (23%), paired-samples t(22) <1. Accuracy was not different from chance (25% in the study), t(22) = 0.73, p = .47 for the sparse condition, and t(22) = 1.25, p = .22 for the decorated condition. 
+
 ```{r}
 with(d.tidy, {
   t.test(pretest ~ classroom, paired = TRUE, alternative = "two.sided")
@@ -125,6 +159,7 @@ t.test(sparse$pretest, mu = 0.25)
 ```
 
 Second, children’s posttest accuracy was higher than their pretest scores in both the sparse condition, t(22) = 7.42, p < .001, and the decorated condition, t(22) = 4.70 (smaller than 4.72 as reported), p <.001. Children’s posttest accuracy (or learning scores) were higher in the sparse condition (M = 55%) than the decorated condition (42%), t(22) = 2.95, p = .007, cohen’s d = .63 (rather than .65 as reported). 
+
 ```{r}
 t.test(decorated$posttest, decorated$pretest, paired = TRUE, alternative = "two.sided")
 t.test(sparse$posttest, sparse$pretest, paired = TRUE, alternative = "two.sided")
@@ -164,29 +199,72 @@ ggplot(summ, aes(x = classroom, y = accuracy,  fill = type)) +
 ### Recording errors 
 
 ```{r}
-compareValues(reportedValue = 0.22, obtainedValue = 0.23)
-compareValues(reportedValue = 0.65, obtainedValue = 0.63)
-compareValues(reportedValue = 0.65, obtainedValue = 0.73)
-compareValues(reportedValue = 0.32, obtainedValue = 0.33)
-compareValues(reportedValue = 22, obtainedValue = 19)
-compareValues(reportedValue = 18, obtainedValue = 19)
-compareValues(reportedValue = 3.17, obtainedValue = 3.49)
-compareValues(reportedValue = 0.002, obtainedValue = 0.004, isP = T)
+reportObject <- reproCheck(reportedValue = 0.22, obtainedValue = 0.23)
+reportObject <- reproCheck(reportedValue = 0.65, obtainedValue = 0.63)
+reportObject <- reproCheck(reportedValue = 0.65, obtainedValue = 0.73)
+reportObject <- reproCheck(reportedValue = 0.32, obtainedValue = 0.33)
+reportObject <- reproCheck(reportedValue = 22, obtainedValue = 19)
+reportObject <- reproCheck(reportedValue = 18, obtainedValue = 19)
+reportObject <- reproCheck(reportedValue = 3.17, obtainedValue = 3.49)
+reportObject <- reproCheck(reportedValue = 0.002, obtainedValue = 0.004, valueType = 'p')
 ```
 
 ## Step 5: Conclusion
 
+In conclusion, this replication analysis identified several discrepancies with the reported outcomes in the original paper, including 5 minor numerical errors, 3 major numerical errors, and an error that is not completely clear according to the original paper. Therefore, the final outcome is failure. 
+
 ```{r}
-carpsReport(Report_Type = "pilot", 
-             Article_ID = "CARPS_8-7-2014_PS", 
-             Insufficient_Information_Errors = 1, 
-             Decision_Errors = 5, 
-             Major_Numerical_Errors = 3, 
-             Time_to_Complete = 240, 
-             Author_Assistance = FALSE)
+Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
+
+Insufficient_Information_Errors <- 0 # how many discrete insufficient information issues did you encounter?
+
+# Assess the causal locus (discrete reproducibility issues) of any reproducibility errors. Note that there doesn't necessarily have to be a one-to-one correspondance between discrete reproducibility issues and reproducibility errors. For example, it could be that the original article neglects to mention that a Greenhouse-Geisser correct was applied to ANOVA outcomes. This might result in multiple reproducibility errors, but there is a single causal locus (discrete reproducibility issue).
+
+locus_typo <- NA # how many discrete issues did you encounter that related to typographical errors?
+locus_specification <- NA # how many discrete issues did you encounter that related to incomplete, incorrect, or unclear specification of the original analyses?
+locus_analysis <- NA # how many discrete issues did you encounter that related to errors in the authors' original analyses?
+locus_data <- NA # how many discrete issues did you encounter that related to errors in the data files shared by the authors?
+locus_unidentified <- NA # how many discrete issues were there for which you could not identify the cause
+
+Affects_Conclusion <- NA # Do any reproducibility issues encounter appear to affect the conclusions made in the original article? This is a subjective judgement, but you should taking into account multiple factors, such as the presence/absence of decision errors, the number of target outcomes that could not be reproduced, the type of outcomes that could or could not be reproduced, the difference in magnitude of effect sizes, and the predictions of the specific hypothesis under scrutiny.
 ```
 
-In conclusion, this replication analysis identified several discrepancies with the reported outcomes in the original paper, including 5 minor numerical errors, 3 major numerical errors, and an error that is not completely clear according to the original paper. Therefore, the final outcome is failure. 
+```{r}
+reportObject <- reportObject %>%
+  filter(dummyRow == FALSE) %>% # remove the dummy row
+  select(-dummyRow) %>% # remove dummy row designation
+  mutate(articleID = articleID) %>% # add the articleID 
+  select(articleID, everything()) # make articleID first column
+
+# decide on final outcome
+if(any(reportObject$comparisonOutcome != "MATCH") | Insufficient_Information_Errors > 0){
+  finalOutcome <- "Failure without author assistance"
+  if(Author_Assistance == T){
+    finalOutcome <- "Failure despite author assistance"
+  }
+}else{
+  finalOutcome <- "Success without author assistance"
+  if(Author_Assistance == T){
+    finalOutcome <- "Success with author assistance"
+  }
+}
+
+# collate report extra details
+reportExtras <- data.frame(articleID, pilotNames, copilotNames, pilotTTC, copilotTTC, pilotStartDate, copilotStartDate, completionDate, Author_Assistance, finalOutcome, Insufficient_Information_Errors, locus_typo, locus_specification, locus_analysis, locus_data, locus_unidentified)
+
+# save report objects
+if(reportType == "pilot"){
+  write_csv(reportObject, "pilotReportDetailed.csv")
+  write_csv(reportExtras, "pilotReportExtras.csv")
+}
+
+if(reportType == "final"){
+  write_csv(reportObject, "finalReportDetailed.csv")
+  write_csv(reportExtras, "finalReportExtras.csv")
+}
+```
+
+# Session information
 
 ```{r session_info, include=TRUE, echo=TRUE, results='markup'}
 devtools::session_info()
