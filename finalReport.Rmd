@@ -322,7 +322,8 @@ ggplot(p1,
 
 ## Step 5: Conclusion
 
-In conclusion, this replication analysis identified several discrepancies with the reported outcomes in the original paper, including 6 minor numerical errors, 3 major numerical errors (one of them eyeballed). The final outcome is therefore a failure. However, the errors do not compromise the interpretation of the results.
+In conclusion, this reproducibility analysis identified several discrepancies with the reported outcomes in the original paper, including 6 minor numerical errors and 2 major numerical errors. Importantly, the discrepancies do not appear to compromise the interpretation of the results.
+
 
 ```{r}
 Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
