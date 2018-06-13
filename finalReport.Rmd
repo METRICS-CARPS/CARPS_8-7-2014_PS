@@ -8,7 +8,7 @@ output:
 
 ```{r}
 articleID <- "8-7-2014_PS" # insert the article ID code here e.g., "10-3-2015_PS"
-reportType <- 'pilot'
+reportType <- 'final'
 pilotNames <- "Mufan Luo, Sean Raymond Zion" # insert the pilot's name here e.g., "Tom Hardwicke". If there are multiple pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 copilotNames <- "Tom Hardwicke, Manuel Bohn" # insert the co-pilot's name here e.g., "Michael Frank". If there are multiple co-pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 pilotTTC <- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
@@ -52,15 +52,11 @@ paired-sample t(22) = 3.49, p = .002, Cohen’s d = 0.73.
 
 ------
 
-[The chunk below sets up some formatting options for the R Markdown document]
-
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Step 1: Load packages
-
-[Some useful packages are being loaded below. You can add any additional ones you might need too.]
+# Step 1: Load packages
 
 ```{r}
 library(tidyverse)
@@ -78,14 +74,13 @@ library(dplyr)# for data munging
 reportObject <- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = NA, valueType = NA, percentageError = NA, comparisonOutcome = NA, eyeballCheck = NA)
 ```
 
-## Step 2: Load data
+# Step 2: Load data
 
 ```{r}
-
 d <- read_excel("data/VisualEnv-Attn-Learning-Data.xlsx", 2)
 ```
 
-## Step 3: Tidy data
+# Step 3: Tidy data
 
 ```{r}
 d.tidy <- d %>%
@@ -109,7 +104,7 @@ d.tidy.gain <- d.tidy %>%
   mutate(gain = post - pre)
 ```
 
-There should be 23 pariticpants in the final data file.
+There should be 23 participants in the final data file.
 
 ```{r}
 d.tidy %>%
@@ -117,10 +112,9 @@ d.tidy %>%
   kable()
 ```
 
+# Step 4: Run analysis
 
-## Step 4: Run analysis
-
-### Descriptive statistics
+## Descriptive statistics
 
 Pretest:
 
@@ -150,7 +144,7 @@ reportObject <- reproCheck(reportedValue = "0.23", obtainedValue =  descriptives
 
 reportObject <- reproCheck(reportedValue = "0.42", obtainedValue =  descriptives %>% filter(classroom == "decorated", test == "post") %>% pull(mean), valueType = "mean")
 ```
-Minor deviations from reported values.
+Minor deviation for one reported value.
 
 Gain scores:
 
@@ -179,7 +173,7 @@ reportObject <- reproCheck(reportedValue = "0.19", obtainedValue =  gain.descrip
 ```
 Minor deviations from reported values.
 
-### Inferential statistics
+## Inferential statistics
 
 > Pretest accuracy was statistically equivalent in the sparse classroom condition (M = 22%) and the decorated-classroom
 condition (M = 23%), paired-samples t(22) < 1,..."
@@ -192,11 +186,16 @@ pre.comparison <- t.test(pre$score ~ pre$classroom, paired = TRUE, alternative =
 ```
 
 There is no specific value to be compared. Obtained t value is smaller than 1. 
+
 ```{r}
-reportObject <- reproCheck(reportedValue = "<1", obtainedValue =  pre.comparison$statistic, valueType = "t",eyeballCheck = TRUE)
+reportObject <- reproCheck(reportedValue = "<1", obtainedValue =  pre.comparison$statistic, valueType = "t", eyeballCheck = TRUE)
 ```
 
+Check df:
 
+```{r}
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = pre.comparison$parameter[['df']], valueType = "df")
+```
 
 > ...and accuracy in both conditions was not different from chance, both one-sample ts (22) < 1.3, ps > .21.
 
@@ -208,9 +207,14 @@ pre.chance.decorated <- t.test(pre$score[pre$classroom == "decorated"], mu = .25
 Both t-values are smaller than 1 as reported, however they are negative since the means are both numerically below chance (25%). Obtained p-values are larger than the reported .21 (smallest is .22).
 
 ```{r}
+
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = pre.chance.sparse$parameter[['df']], valueType = "df")
+
 reportObject <- reproCheck(reportedValue = "<1.3", obtainedValue =  pre.chance.sparse$statistic, valueType = "t",eyeballCheck = TRUE)
 
 reportObject <- reproCheck(reportedValue = "> .21", obtainedValue =  pre.chance.sparse$p.value, valueType = "p",eyeballCheck = TRUE)
+
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = pre.chance.decorated$parameter[['df']], valueType = "df")
 
 reportObject <- reproCheck(reportedValue = "<1.3", obtainedValue =  pre.chance.decorated$statistic, valueType = "t",eyeballCheck = TRUE)
 
@@ -229,9 +233,13 @@ pre.pos.comp.decorated <- t.test(d.tidy$score[d.tidy$classroom == "decorated"] ~
 Smaller obtained p-value (decorated room) is 4.70 and therefore not larger than 4.72 as reported. P-values are smaller or equal to .0001 as reported.
 
 ```{r}
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = pre.pos.comp.sparse$parameter[['df']], valueType = "df")
+
 reportObject <- reproCheck(reportedValue = "> 4.72", obtainedValue =  pre.pos.comp.sparse$statistic, valueType = "t",eyeballCheck = TRUE)
 
 reportObject <- reproCheck(reportedValue = "≤ .0001", obtainedValue =  pre.pos.comp.sparse$p.value, valueType = "p",eyeballCheck = TRUE)
+
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = pre.pos.comp.decorated$parameter[['df']], valueType = "df")
 
 reportObject <- reproCheck(reportedValue = "> 4.72", obtainedValue =  pre.pos.comp.decorated$statistic, valueType = "t",eyeballCheck = FALSE)
 
@@ -255,6 +263,8 @@ post.comparison.d <- cohensD(post$score ~ post$classroom)
 T- and p-value are as reported. Obtained effect size is slightly smaller than the reported (0.63 compared to 0.65)
 
 ```{r}
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = post.comparison$parameter[['df']], valueType = "df")
+
 reportObject <- reproCheck(reportedValue = "2.95", obtainedValue =  post.comparison$statistic, valueType = "t")
 
 reportObject <- reproCheck(reportedValue = ".007", obtainedValue =  post.comparison$p.value, valueType = "p")
@@ -271,9 +281,11 @@ gain.comparison <- t.test(d.tidy.gain$gain[d.tidy.gain$classroom == "sparse"], d
 gain.comparison.d <- cohensD(d.tidy.gain$gain ~ d.tidy.gain$classroom)
 ```
 
-T-value and effect size are considerably smaller than reported, p-value is condierably larger.
+T-value and effect size are considerably smaller than reported, p-value is considerably larger.
 
 ```{r}
+reportObject <- reproCheck(reportedValue = "22", obtainedValue = gain.comparison$parameter[['df']], valueType = "df")
+
 reportObject <- reproCheck(reportedValue = "3.49", obtainedValue =  gain.comparison$statistic, valueType = "t")
 
 reportObject <- reproCheck(reportedValue = ".002", obtainedValue =  gain.comparison$p.value, valueType = "p")
@@ -281,8 +293,8 @@ reportObject <- reproCheck(reportedValue = ".002", obtainedValue =  gain.compari
 reportObject <- reproCheck(reportedValue = "0.73", obtainedValue =  gain.comparison.d, valueType = "d")
 ```
 
-
 ### Replicate Figure 4 in the paper
+
 ```{r}
 library(ggthemes)
 
