@@ -1,2 +1,2 @@
 articleID,pilotNames,copilotNames,pilotTTC,copilotTTC,pilotStartDate,copilotStartDate,completionDate,Author_Assistance,finalOutcome,Insufficient_Information_Errors,locus_typo,locus_specification,locus_analysis,locus_data,locus_unidentified
-8-7-2014_PS,"Mufan Luo, Sean Raymond Zion","Tom Hardwicke, Manuel Bohn",240,NA,2017-01-11,2018-06-06,2018-06-12,TRUE,Failure despite author assistance,1,NA,1,3,NA,NA
+8-7-2014_PS,"Mufan Luo, Sean Raymond Zion","Tom Hardwicke, Manuel Bohn",240,NA,2017-01-11,2018-06-06,2018-06-12,TRUE,Failure despite author assistance,1,NA,NA,3,NA,NA
