@@ -12,10 +12,10 @@ reportType <- 'final'
 pilotNames <- "Mufan Luo, Sean Raymond Zion" # insert the pilot's name here e.g., "Tom Hardwicke". If there are multiple pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 copilotNames <- "Tom Hardwicke, Manuel Bohn" # insert the co-pilot's name here e.g., "Michael Frank". If there are multiple co-pilots enter both names in a character string e.g., "Tom Hardwicke, Bob Dylan"
 pilotTTC <- 240 # insert the pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
-copilotTTC <- NA # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
+copilotTTC <- 200 # insert the co- pilot's estimated time to complete (in minutes, fine to approximate) e.g., 120
 pilotStartDate <- as.Date("01/11/17", format = "%m/%d/%y") # insert the pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
 copilotStartDate <- as.Date("06/06/18", format = "%m/%d/%y") # insert the co-pilot's start date in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
-completionDate <- as.Date("06/12/18", format = "%m/%d/%y") # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
+completionDate <- as.Date("06/27/18", format = "%m/%d/%y") # copilot insert the date of final report completion (after any necessary rounds of author assistance) in US format e.g., as.Date("01/25/18", format = "%m/%d/%y")
 ```
 
 -------
@@ -365,7 +365,7 @@ When confronting the authors with these discrepancies, they informed us that the
 ```{r}
 Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
 
-Insufficient_Information_Errors <- NA # how many discrete insufficient information issues did you encounter?
+Insufficient_Information_Errors <- 0 # how many discrete insufficient information issues did you encounter?
 
 # Assess the causal locus (discrete reproducibility issues) of any reproducibility errors. Note that there doesn't necessarily have to be a one-to-one correspondance between discrete reproducibility issues and reproducibility errors. For example, it could be that the original article neglects to mention that a Greenhouse-Geisser correct was applied to ANOVA outcomes. This might result in multiple reproducibility errors, but there is a single causal locus (discrete reproducibility issue).
 
