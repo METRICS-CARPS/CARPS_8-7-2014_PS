@@ -78,6 +78,10 @@ reportObject <- data.frame(dummyRow = TRUE, reportedValue = NA, obtainedValue = 
 
 ```{r}
 d <- read_excel("data/VisualEnv-Attn-Learning-Data.xlsx", 2)
+
+d.gain.pre <- read_excel("data/VisualEnv-Attn-Learning-Data.xlsx", 3, skip = 2)
+d.gain.post <- read_excel("data/VisualEnv-Attn-Learning-Data.xlsx", 4,skip = 2)
+
 ```
 
 # Step 3: Tidy data
@@ -99,9 +103,40 @@ d.tidy <- d %>%
   arrange(ID) %>%
   select(-condition)
 
-d.tidy.gain <- d.tidy %>%
-  spread(test,score) %>%
-  mutate(gain = post - pre)
+
+
+d.tidy.gain.pre <- d.gain.pre %>%
+  select(-X__1,-`#`)%>%
+  gather(pre_test_type,score, -ID)%>%
+  arrange(ID)%>%
+  mutate(classroom = ifelse(grepl("Sparse",pre_test_type), "sparse","decorated"),
+         test = "pre",
+         type = ifelse(grepl("Plate",pre_test_type), "plate",ifelse(grepl("Volcano",pre_test_type), "volcano",ifelse(grepl("Bugs",pre_test_type), "bugs",ifelse(grepl("Stone",pre_test_type), "stone",ifelse(grepl("Solar",pre_test_type), "solar",ifelse(grepl("Flight",pre_test_type), "flight","total")))))))%>%
+  filter(type != "total") %>%
+  select(-pre_test_type)
+
+d.tidy.gain.post <- d.gain.post %>%
+  select(-X__1,-`#`)%>%
+  gather(pre_test_type,score, -ID)%>%
+  arrange(ID)%>%
+  mutate(classroom = ifelse(grepl("Sparse",pre_test_type), "sparse","decorated"),
+         test = "post",
+         type = ifelse(grepl("Plate",pre_test_type), "plate",ifelse(grepl("Volcano",pre_test_type), "volcano",ifelse(grepl("Bugs",pre_test_type), "bugs",ifelse(grepl("Stone",pre_test_type), "stone",ifelse(grepl("Solar",pre_test_type), "solar",ifelse(grepl("Flight",pre_test_type), "flight","total")))))),
+         score = ifelse(score == "Absent",NA,score),
+         score = as.numeric(score))%>%
+  filter(type != "total") %>%
+  select(-pre_test_type)
+
+
+d.tidy.gain <-bind_rows(d.tidy.gain.pre,d.tidy.gain.post)%>%
+  filter(ID != "cs15")%>%
+  arrange(ID)%>%
+  spread(test,score)%>%
+  na.omit()%>%
+  mutate(gain_by_type = post - pre)%>%
+  group_by(ID,classroom)%>%
+  summarise(gain = mean(gain_by_type))
+
 ```
 
 There should be 23 participants in the final data file.
@@ -285,7 +320,7 @@ gain.comparison <- t.test(d.tidy.gain$gain[d.tidy.gain$classroom == "sparse"], d
 gain.comparison.d <- cohensD(d.tidy.gain$gain ~ d.tidy.gain$classroom)
 ```
 
-T-value and effect size are considerably smaller than reported, p-value is considerably larger.
+T-value and effect size as reported.
 
 ```{r}
 reportObject <- reproCheck(reportedValue = "22", obtainedValue = gain.comparison$parameter[['df']], valueType = "df")
@@ -322,19 +357,18 @@ ggplot(p1,
 
 ## Step 5: Conclusion
 
-In conclusion, this reproducibility analysis identified several discrepancies with the reported outcomes in the original paper, including 6 minor numerical errors and 2 major numerical errors. Importantly, the discrepancies do not appear to compromise the interpretation of the results.
-
+With author assistance, this reproducibility analysis identified only minor numerical errors. 
 
 ```{r}
-Author_Assistance = FALSE # was author assistance provided? (if so, enter TRUE)
+Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
 
-Insufficient_Information_Errors <- 0 # how many discrete insufficient information issues did you encounter?
+Insufficient_Information_Errors <- NA # how many discrete insufficient information issues did you encounter?
 
 # Assess the causal locus (discrete reproducibility issues) of any reproducibility errors. Note that there doesn't necessarily have to be a one-to-one correspondance between discrete reproducibility issues and reproducibility errors. For example, it could be that the original article neglects to mention that a Greenhouse-Geisser correct was applied to ANOVA outcomes. This might result in multiple reproducibility errors, but there is a single causal locus (discrete reproducibility issue).
 
 locus_typo <- NA # how many discrete issues did you encounter that related to typographical errors?
-locus_specification <- NA # how many discrete issues did you encounter that related to incomplete, incorrect, or unclear specification of the original analyses?
-locus_analysis <- 9 # how many discrete issues did you encounter that related to errors in the authors' original analyses?
+locus_specification <- 1 # how many discrete issues did you encounter that related to incomplete, incorrect, or unclear specification of the original analyses?
+locus_analysis <- 3 # how many discrete issues did you encounter that related to errors in the authors' original analyses?
 locus_data <- NA # how many discrete issues did you encounter that related to errors in the data files shared by the authors?
 locus_unidentified <- NA # how many discrete issues were there for which you could not identify the cause
 
