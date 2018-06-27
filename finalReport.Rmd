@@ -357,7 +357,10 @@ ggplot(p1,
 
 ## Step 5: Conclusion
 
-With author assistance, this reproducibility analysis identified only minor numerical errors. 
+Initially we encountered major errors for the analysis of gain scores. The t-value and the effect size obtained were considerably smaller compared to the ones reported in the paper. We originally calculated the gain scores by averaging scores in each test phase (pre and post) in each condition for each subject and then subtracting the averages for the post from the ones for the pre test. This way of calculating  scores was based on the following section of the paper:
+> Gain scores were calculated by subtracting each participant’s pretest score from his or her posttest score.
+
+When confronting the authors with these discrepancies, they informed us that the gain scores were calculated in a different way, namely by subtracting pre from post test scores for each specific lesson (e.g. plate tectonics) and then averaging across lesson difference scores to get a mean gain score per subject and condition. This also included excluding some sub lessons for some of the participants due to absence. This way of calculating the gain scores was not obvious based on the information in the paper. The supplementary material also did not include any additional inforamtion about gain scores. After correcting the way the gain scores were calculated, all major issues were resolved. 
 
 ```{r}
 Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
