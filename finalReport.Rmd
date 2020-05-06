@@ -63,7 +63,7 @@ library(tidyverse)
 library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
-library(CARPSreports) # custom report functions
+library(ReproReports) # custom report functions
 library(ggplot2)
 library(lsr)
 library(dplyr)# for data munging
@@ -95,18 +95,18 @@ d.tidy <- d %>%
          "Pre-Test-Sparse-Classroom",
          "Pre-Test-Decorated Classroom",
          "Post-Test-Sparse-Classroom",
-         "Post-Test-Decorated Classroom")%>%
+         "Post-Test-Decorated Classroom") %>%
   gather(condition,score,-ID) %>%
   mutate(classroom = ifelse(grepl("Sparse",condition), "sparse","decorated"),
          test = ifelse(grepl("Pre-Test",condition), "pre","post" ),
-         score = as.numeric(score))%>%
+         score = as.numeric(score)) %>%
   arrange(ID) %>%
   select(-condition)
 
 
 
 d.tidy.gain.pre <- d.gain.pre %>%
-  select(-X__1,-`#`)%>%
+  select(-...11,-`#`) %>%
   gather(pre_test_type,score, -ID)%>%
   arrange(ID)%>%
   mutate(classroom = ifelse(grepl("Sparse",pre_test_type), "sparse","decorated"),
@@ -116,7 +116,7 @@ d.tidy.gain.pre <- d.gain.pre %>%
   select(-pre_test_type)
 
 d.tidy.gain.post <- d.gain.post %>%
-  select(-X__1,-`#`)%>%
+  select(-...11,-`#`)%>%
   gather(pre_test_type,score, -ID)%>%
   arrange(ID)%>%
   mutate(classroom = ifelse(grepl("Sparse",pre_test_type), "sparse","decorated"),
@@ -360,7 +360,7 @@ ggplot(p1,
 Initially we encountered major errors for the analysis of gain scores. The t-value and the effect size obtained were considerably smaller compared to the ones reported in the paper. We originally calculated the gain scores by averaging scores in each test phase (pre and post) in each condition for each subject and then subtracting the averages for the post from the ones for the pre test. This way of calculating  scores was based on the following section of the paper:
 > Gain scores were calculated by subtracting each participant’s pretest score from his or her posttest score.
 
-When confronting the authors with these discrepancies, they informed us that the gain scores were calculated in a different way, namely by subtracting pre from post test scores for each specific lesson (e.g. plate tectonics) and then averaging across lesson difference scores to get a mean gain score per subject and condition. This also included excluding some sub lessons for some of the participants due to absence. This way of calculating the gain scores was not obvious based on the information in the paper. The supplementary material also did not include any additional inforamtion about gain scores. After correcting the way the gain scores were calculated, all major issues were resolved. 
+When querying the authors with these discrepancies, they informed us that the gain scores were calculated in a different way, namely by subtracting pre from post test scores for each specific lesson (e.g. plate tectonics) and then averaging across lesson difference scores to get a mean gain score per subject and condition. This also included excluding some sub lessons for some of the participants due to absence. This way of calculating the gain scores was not obvious based on the information in the paper. The supplementary material also did not include any additional inforamtion about gain scores. After correcting the way the gain scores were calculated, all major issues were resolved. 
 
 ```{r}
 Author_Assistance = TRUE # was author assistance provided? (if so, enter TRUE)
@@ -393,7 +393,7 @@ reportObject <- reportObject %>%
   select(articleID, everything()) # make articleID first column
 
 # decide on final outcome
-if(any(reportObject$comparisonOutcome %in% c("MAJOR_ERROR", "DECISION_ERROR")) | Insufficient_Information_Errors > 0){
+if(any(!(reportObject$comparisonOutcome %in% c("MATCH", "MINOR_ERROR"))) | Insufficient_Information_Errors > 0){
   finalOutcome <- "Failure without author assistance"
   if(Author_Assistance == T){
     finalOutcome <- "Failure despite author assistance"
